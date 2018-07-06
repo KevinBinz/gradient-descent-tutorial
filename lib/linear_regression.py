@@ -1,9 +1,6 @@
 import numpy as np
 
-class OLS():
-    def run(self):
-        pass
-
+class LinearRegression():
     def __init__(self, data, num_iter, verbosity):
         self.data = data
         self.num_iters = num_iter
@@ -48,7 +45,7 @@ class OLS():
         if(self.print_mod <= 0):
             return
         if(iter % self.print_mod == 0):
-            print("After {0} iterations b = {1}, m = {2}, error = {3}".format(iter, theta[0], theta[1], loss))
+            print("After {0} iterations b = {1}, m = {2}, loss = {3}".format(iter, theta[0], theta[1], loss))
 
     def compute_error(self, x, y, theta):
         hypothesis = np.dot(x, theta)

@@ -1,8 +1,11 @@
 import numpy as np
-from libraries.ols import OLS
+from numpy import linalg as la
+from numpy import testing
+from lib.linear_regression import LinearRegression
+import pytest
 
 
-class GradientDescent2D(OLS):
+class GradientDescent2D(LinearRegression):
     def __init__(self, data, num_iter, learning_rate, verbosity):
         super(GradientDescent2D, self).__init__(data, num_iter, verbosity)
         self.learning_rate = learning_rate
@@ -20,19 +23,21 @@ class GradientDescent2D(OLS):
             theta[0] = theta[0] - self.learning_rate * gradient[0]
             theta[1] = theta[1] - self.learning_rate * gradient[1]
             self.save_result(iter, theta, loss)
+        return theta, self.compute_loss_directly(x, y, theta)
 
     def gradient_descent_v2(self):
         x, y, m, theta = self.reset()
 
         for iter in range(0, self.num_iters):
-            loss, gradient = 0, np.zeros(shape=2)
+            loss, gradient = 0, 0
             for i in range(0, m):
                 prediction = np.dot(x[i,:], theta)
                 error = y[i] - prediction
                 loss = loss + (1/m) * error ** 2
-                gradient = gradient - (2/m) * np.dot(x[i,:], error)
+                gradient = gradient - (2/m) * x[i,1] * error
             theta = theta - self.learning_rate * gradient
             self.save_result(iter, theta, loss)
+        return theta, self.compute_loss_directly(x, y, theta)
 
     def gradient_descent_v3(self):
         x, y, m, theta = self.reset()
@@ -43,5 +48,7 @@ class GradientDescent2D(OLS):
             loss = np.sum(np.square(error)) / len(error)                    # (m,1) -> (1,1)
             gradient = (2/m) * np.dot(x.T, error)                           # (2,m)*(m,1) -> (2,1)
             theta = theta - (self.learning_rate * gradient)                 # (2,1) -> (2,1)
-
             self.save_result(iter, theta, loss)
+        return theta, self.compute_loss_directly(x, y, theta)
+
+

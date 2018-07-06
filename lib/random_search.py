@@ -1,7 +1,7 @@
 import random
-from libraries.ols import OLS
+from lib.linear_regression import LinearRegression
 
-class RandomSearch(OLS):
+class RandomSearch(LinearRegression):
     def __init__(self, data, num_iter, verbosity, param_range):
         super(RandomSearch, self).__init__(data, num_iter, verbosity)
         self.range = param_range
@@ -19,7 +19,8 @@ class RandomSearch(OLS):
                 min_loss = loss
                 min_theta = theta
 
-            self.save_result(i, theta, loss)
+            self.save_result(i, min_theta, loss)
 
-        return min_theta
+        loss = self.compute_loss_directly(x, y, min_theta)
+        return min_theta, loss
 
