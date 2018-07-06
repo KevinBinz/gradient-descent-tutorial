@@ -1,8 +1,8 @@
 import time
 import numpy as np
 
-from lib.gradient_descent_2d import GradientDescent2D
-from lib.random_search import RandomSearch
+from lib.gradient_descent_2d import GradientDescent2D, GradientDescent2D_Vectorized
+from lib.manual_search import RandomSearch, GridSearch
 from lib.least_squares import OrdinaryLeastSquares
 
 def display_correct_result():
@@ -22,36 +22,38 @@ if __name__ == "__main__":
     data = np.array(np.genfromtxt("data/data.csv", delimiter=','))
     display_correct_result()
 
-    rs = RandomSearch(data, num_iter, verbosity, param_range=[0.0, 1.0, 0.0, 1.0])
-    gd = GradientDescent2D(data, num_iter, learning_rate, verbosity)
+    print("=== Ordinary Least Squares ===")
     ols = OrdinaryLeastSquares(data, num_iter, verbosity)
+    start_time = time.time()
+    final_params, final_loss = ols.fit()
+    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
 
     print("=== Random Search ===")
+    rs = RandomSearch(data, num_iter, verbosity, param_range=[0.0, 1.0, 0.0, 1.0])
     start_time = time.time()
-    final_params, final_loss = rs.run()
+    final_params, final_loss = rs.fit()
+    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
+
+    print("=== Grid Search ===")
+    rs = GridSearch(data, num_iter, verbosity, param_range=[0.0, 1.0, 0.0, 1.0])
+    start_time = time.time()
+    final_params, final_loss = rs.fit()
     display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
 
     print("=== Vanilla Gradient Descent ===")
+    gd = GradientDescent2D(data, num_iter, learning_rate, verbosity)
     start_time = time.time()
-    final_params = gd.gradient_descent_v1()
+    final_params = gd.fit()
     display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
-
-    # print("=== Partially Vectorized Gradient Descent ===")
-    # start_time = time.time()
-    # gd.gradient_descent_v2()
-    # print("Elapsed Time: {0}".format(time.time() - start_time))
 
     print("=== Vectorized Gradient Descent ===")
+    gd_vec = GradientDescent2D_Vectorized(data, num_iter, learning_rate, verbosity)
     start_time = time.time()
-    final_params, final_loss = gd.gradient_descent_v3()
+    final_params, final_loss = gd_vec.fit()
     display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
 
-    print("=== Ordinary Least Squares ===")
-    start_time = time.time()
-    final_params, final_loss = ols.ordinary_least_squares()
-    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
 
-# save_mod = -1  # Turns off file creation. Set to e.g., 100 to save one file per 100 runs.
+    # save_mod = -1  # Turns off file creation. Set to e.g., 100 to save one file per 100 runs.
     # save_path = "rs_scatter_gif/"''
     # z_angle = 0
     # ov = MatplotLibVisualizer(random_iterations, param_range, data_range=[0, 4, 0, 3],
