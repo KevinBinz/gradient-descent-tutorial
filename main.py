@@ -1,56 +1,55 @@
 import time
 import numpy as np
 
-from lib.gradient_descent_2d import GradientDescent2D, GradientDescent2D_Vectorized
-from lib.manual_search import RandomSearch, GridSearch
-from lib.least_squares import OrdinaryLeastSquares
+from optimizers.gradient_descent_2d import GradientDescent2D, GradientDescent2D_Vectorized
+from optimizers.gradient_descent import GradientDescent, GradientDescent_Vectorized
+from optimizers.manual_search import RandomSearch, GridSearch
+from optimizers.least_squares import OrdinaryLeastSquares
 
-def display_correct_result():
-   print("\n=== Correct Parameters: b = {}, m = {}, loss = {} ===".format((2/3), (1/2), 0.055555555555))
+def get_metadata(fn):
+    learning_rates = {
+        "data/more_columns.csv": 0.0005,
+        "data/data.csv": 0.05,
+        "data/more_rows.csv": 0.005
+    }
+    num_columns = {
+        "data/more_columns.csv": 2,
+        "data/data.csv": 1,
+        "data/more_rows.csv": 1
+    }
+    return learning_rates[fn], num_columns[fn]
 
 def display_solution(final_params, final_loss, start_time, print_elapsed_time):
-    print("Solution: b = {}, m = {}, loss = {}".format(final_params[0], final_params[1], final_loss))
+    print("Solution: theta = {}, loss = {}".format(final_params.flatten(), final_loss))
     if print_elapsed_time:
         print("Elapsed Time: {0}".format(time.time() - start_time))
 
+def deploy_optimizer(string, optimizer):
+    print("=== {} ===".format(string))
+    start_time = time.time()
+    final_params, final_loss = optimizer.fit()
+    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
+
 if __name__ == "__main__":
-    verbosity = 300  # -1 turns off printing
-                     # N to display results from every N runs.
-    num_iter = 601
-    learning_rate = 0.05
+    verbosity = 300    # N to display results from every N runs (-1 turns off printing)
+    num_iter = 901
 
-    data = np.array(np.genfromtxt("data/data.csv", delimiter=','))
-    display_correct_result()
+    fns = ["data/data.csv", "data/more_rows.csv", "data/more_columns.csv"]
+    for fn in fns:
+        learning_rate, num_columns = get_metadata(fn)
+        data = np.array(np.genfromtxt(fn, delimiter=','))
+        print()
+        print(fn)
 
-    print("=== Ordinary Least Squares ===")
-    ols = OrdinaryLeastSquares(data, num_iter, verbosity)
-    start_time = time.time()
-    final_params, final_loss = ols.fit()
-    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
+        deploy_optimizer("Ordinary Least Squares", OrdinaryLeastSquares(data, num_iter, verbosity))
+        deploy_optimizer("Random Search", RandomSearch(data, num_iter, verbosity, param_range=[0.0, 1.0, 0.0, 1.0]))
+        deploy_optimizer("Gradient Descent", GradientDescent(data, num_iter, learning_rate, verbosity))
+        deploy_optimizer("Gradient Descent (Vectorized)", GradientDescent_Vectorized(data, num_iter, learning_rate, verbosity))
+        if num_columns == 1:
+            deploy_optimizer("2D Gradient Descent", GradientDescent(data, num_iter, learning_rate, verbosity))
+            deploy_optimizer("2D Gradient Descent (Vectorized)", GradientDescent2D_Vectorized(data, num_iter, learning_rate, verbosity))
 
-    print("=== Random Search ===")
-    rs = RandomSearch(data, num_iter, verbosity, param_range=[0.0, 1.0, 0.0, 1.0])
-    start_time = time.time()
-    final_params, final_loss = rs.fit()
-    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
 
-    print("=== Grid Search ===")
-    rs = GridSearch(data, num_iter, verbosity, param_range=[0.0, 1.0, 0.0, 1.0])
-    start_time = time.time()
-    final_params, final_loss = rs.fit()
-    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
-
-    print("=== Vanilla Gradient Descent ===")
-    gd = GradientDescent2D(data, num_iter, learning_rate, verbosity)
-    start_time = time.time()
-    final_params = gd.fit()
-    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
-
-    print("=== Vectorized Gradient Descent ===")
-    gd_vec = GradientDescent2D_Vectorized(data, num_iter, learning_rate, verbosity)
-    start_time = time.time()
-    final_params, final_loss = gd_vec.fit()
-    display_solution(final_params, final_loss, start_time, print_elapsed_time=False)
 
 
     # save_mod = -1  # Turns off file creation. Set to e.g., 100 to save one file per 100 runs.
